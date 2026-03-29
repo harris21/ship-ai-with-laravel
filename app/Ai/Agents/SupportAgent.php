@@ -4,6 +4,7 @@ namespace App\Ai\Agents;
 
 use App\Ai\Tools\CustomerHistory;
 use App\Ai\Tools\OrderLookup;
+use App\Models\KnowledgeArticle;
 use Laravel\Ai\Attributes\MaxSteps;
 use Laravel\Ai\Attributes\MaxTokens;
 use Laravel\Ai\Attributes\Temperature;
@@ -12,6 +13,7 @@ use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
 use Laravel\Ai\Contracts\HasTools;
 use Laravel\Ai\Promptable;
+use Laravel\Ai\Tools\SimilaritySearch;
 use Stringable;
 
 #[MaxSteps(5)]
@@ -37,6 +39,8 @@ class SupportAgent implements Agent, Conversational, HasTools
                  - If you cannot resolve an issue, let the customer know a human agent will follow up
                  - When a customer mentions an order number, use the OrderLookup tool to get real data
                  - When a customer provides their email, use the CustomerHistory tool for context
+                 - When a customer asks about policies, shipping, returns, or procedures, use the knowledge base search tool to find accurate information
+                 - Always base policy answers on the knowledge base - never make up policies
              PROMPT;
     }
 
@@ -45,6 +49,11 @@ class SupportAgent implements Agent, Conversational, HasTools
         return [
             new OrderLookup,
             new CustomerHistory,
+
+            SimilaritySearch::usingModel(KnowledgeArticle::class, 'embedding')
+                ->withDescription('Search the company knowledge base for policies,
+                procedures, and FAQ answers. Use this when a customer asks about returns,
+                shipping, billing, account issues, or any company policy.'),
         ];
     }
 }

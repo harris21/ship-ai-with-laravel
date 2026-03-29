@@ -4,6 +4,7 @@ use App\Ai\Agents\SupportAgent;
 use App\Ai\Agents\TicketClassifier;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\TicketController;
+use App\Models\KnowledgeArticle;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -83,6 +84,27 @@ Route::get('/chat/resume', function () {
     $response = $agent->continue($conversationId, as: $user)->prompt(
         'Actually, can you check my email for the shipping confirmation too?'
     );
+
+    return $response->text;
+});
+
+Route::get('/kb/search', function () {
+    $query = request('q', 'How do I return a damaged item?');
+
+    $results = KnowledgeArticle::query()
+        ->whereVectorSimilarTo('embedding', $query)
+        ->limit(3)
+        ->get();
+
+    return $results->map(fn ($article) => [
+        'title' => $article->title,
+        'category' => $article->category,
+        'excerpt' => str($article->content)->limit(100),
+    ]);
+});
+
+Route::get('/support/kb-test', function () {
+    $response = (new SupportAgent)->prompt('What is your return policy for damaged items?');
 
     return $response->text;
 });
