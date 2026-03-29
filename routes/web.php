@@ -1,8 +1,9 @@
 <?php
 
 use App\Ai\Agents\SupportAgent;
+use App\Ai\Agents\TicketClassifier;
+use App\Http\Controllers\TicketController;
 use Illuminate\Support\Facades\Route;
-use Laravel\Ai\Enums\Lab;
 
 Route::view('/', 'welcome');
 
@@ -19,6 +20,19 @@ Route::get('/support/test', function () {
         'model' => $response->meta->model,
     ];
 });
+
+Route::get('/classify/test', function () {
+    $result = (new TicketClassifier)->prompt('Hey, just wondering when my package will arrive? Order #1055. No rush, just curious!');
+
+    return [
+        'category' => $result['category'],
+        'priority' => $result['priority'],
+        'sentiment' => $result['sentiment'],
+        'summary' => $result['summary'],
+    ];
+});
+
+Route::post('/tickets', [TicketController::class, 'store'])->middleware('auth');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
