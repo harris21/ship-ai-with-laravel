@@ -7,7 +7,9 @@ use App\Ai\Tools\OrderLookup;
 use Laravel\Ai\Attributes\MaxSteps;
 use Laravel\Ai\Attributes\MaxTokens;
 use Laravel\Ai\Attributes\Temperature;
+use Laravel\Ai\Concerns\RemembersConversations;
 use Laravel\Ai\Contracts\Agent;
+use Laravel\Ai\Contracts\Conversational;
 use Laravel\Ai\Contracts\HasTools;
 use Laravel\Ai\Promptable;
 use Stringable;
@@ -15,9 +17,9 @@ use Stringable;
 #[MaxSteps(5)]
 #[MaxTokens(500)]
 #[Temperature(0.7)]
-class SupportAgent implements Agent, HasTools
+class SupportAgent implements Agent, Conversational, HasTools
 {
-    use Promptable;
+    use Promptable, RemembersConversations;
 
     /**
      * Get the instructions that the agent should follow.

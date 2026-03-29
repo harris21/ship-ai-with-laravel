@@ -2,7 +2,9 @@
 
 use App\Ai\Agents\SupportAgent;
 use App\Ai\Agents\TicketClassifier;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\TicketController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
@@ -33,6 +35,59 @@ Route::get('/classify/test', function () {
 });
 
 Route::post('/tickets', [TicketController::class, 'store'])->middleware('auth');
+
+Route::get('/memory/problem', function () {
+    $agent = new SupportAgent;
+
+    $first = $agent->prompt('Hi, my order #1042 seems to be lost.');
+
+    $second = $agent->prompt('Can you just resend it?');
+
+    return [
+        'first' => $first->text,
+        'second' => $second->text,
+    ];
+});
+
+Route::get('/chat/start', function () {
+    $user = User::first();
+    $agent = new SupportAgent;
+
+    $response = $agent->forUser($user)->prompt(
+        'Hi, my order #1042 seems to be lost. It was supposed to arrive last week.'
+    );
+
+    return [
+        'reply' => $response->text,
+        'conversation_id' => $response->conversationId,
+    ];
+});
+
+Route::get('/chat/continue/{conversationId}', function (string $conversationId) {
+    $user = User::first();
+    $agent = new SupportAgent;
+
+    $response = $agent->continue($conversationId, as: $user)->prompt(
+        'Can you just send a replacement instead?'
+    );
+
+    return $response->text;
+});
+
+Route::get('/chat/resume', function () {
+    $user = User::first();
+    $agent = new SupportAgent;
+
+    $conversationId = session('last_conversation_id');
+
+    $response = $agent->continue($conversationId, as: $user)->prompt(
+        'Actually, can you check my email for the shipping confirmation too?'
+    );
+
+    return $response->text;
+});
+
+Route::post('/chat', [ChatController::class, 'send'])->middleware('auth');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
