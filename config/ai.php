@@ -13,6 +13,8 @@ return [
     |
     */
 
+    'vector_store_id' => env('VECTOR_STORE_ID'),
+
     'default' => 'openai',
     'default_for_images' => 'gemini',
     'default_for_audio' => 'openai',

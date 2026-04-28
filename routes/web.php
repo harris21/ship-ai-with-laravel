@@ -109,6 +109,16 @@ Route::get('/support/kb-test', function () {
     return $response->text;
 });
 
+Route::get('/support/rag-test', function () {
+    $agent = new SupportAgent;
+    $user = User::first();
+
+    $response = $agent->forUser($user)->prompt('My order #1042 arrived damaged. What should I do?
+    ');
+
+    return $response->text;
+});
+
 Route::post('/chat', [ChatController::class, 'send'])->middleware('auth');
 
 Route::view('dashboard', 'dashboard')
