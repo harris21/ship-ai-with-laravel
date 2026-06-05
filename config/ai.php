@@ -1,5 +1,7 @@
 <?php
 
+use Laravel\Ai\Enums\Lab;
+
 return [
 
     /*
@@ -12,6 +14,10 @@ return [
     | for the operation. This should be any provider defined below.
     |
     */
+
+    'support_agent' => [
+        'providers' => [Lab::OpenAI, Lab::Anthropic, Lab::Gemini],
+    ],
 
     'vector_store_id' => env('VECTOR_STORE_ID'),
 

@@ -2,6 +2,9 @@
 
 namespace App\Ai\Agents;
 
+use App\Ai\Middleware\LogPrompts;
+use App\Ai\Middleware\RateLimiting;
+use App\Ai\Middleware\TrackCosts;
 use App\Ai\Tools\CustomerHistory;
 use App\Ai\Tools\OrderLookup;
 use App\Models\KnowledgeArticle;
@@ -11,6 +14,7 @@ use Laravel\Ai\Attributes\Temperature;
 use Laravel\Ai\Concerns\RemembersConversations;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
+use Laravel\Ai\Contracts\HasMiddleware;
 use Laravel\Ai\Contracts\HasTools;
 use Laravel\Ai\Promptable;
 use Laravel\Ai\Providers\Tools\FileSearch;
@@ -21,9 +25,18 @@ use Stringable;
 #[MaxSteps(5)]
 #[MaxTokens(500)]
 #[Temperature(0.7)]
-class SupportAgent implements Agent, Conversational, HasTools
+class SupportAgent implements Agent, Conversational, HasMiddleware, HasTools
 {
     use Promptable, RemembersConversations;
+
+    public function middleware(): array
+    {
+        return [
+            RateLimiting::class,
+            LogPrompts::class,
+            TrackCosts::class,
+        ];
+    }
 
     /**
      * Get the instructions that the agent should follow.

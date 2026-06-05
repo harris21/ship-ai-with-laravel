@@ -34,8 +34,10 @@ class ChatController extends Controller
         ]);
 
         try {
+            $providers = config('ai.support_agent.providers');
+
             $streamable = $this->resolveAgent($request)
-                ->stream($request->message);
+                ->stream($request->message, provider: $providers);
 
             $conversationId = null;
 
