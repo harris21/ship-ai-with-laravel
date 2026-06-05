@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Database\Factories\KnowledgeArticleFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Ai\Embeddings;
 
 class KnowledgeArticle extends Model
 {
+    /** @use HasFactory<KnowledgeArticleFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'title',
         'content',

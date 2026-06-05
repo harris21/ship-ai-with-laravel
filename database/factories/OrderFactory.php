@@ -37,7 +37,7 @@ class OrderFactory extends Factory
 
     public function completed(): static
     {
-        return $this->delivered();
+        return $this->state(['status' => 'completed']);
     }
 
     public function cancelled(): static
