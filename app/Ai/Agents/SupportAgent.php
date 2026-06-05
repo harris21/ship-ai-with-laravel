@@ -14,6 +14,7 @@ use Laravel\Ai\Contracts\Conversational;
 use Laravel\Ai\Contracts\HasTools;
 use Laravel\Ai\Promptable;
 use Laravel\Ai\Providers\Tools\FileSearch;
+use Laravel\Ai\Providers\Tools\WebSearch;
 use Laravel\Ai\Tools\SimilaritySearch;
 use Stringable;
 
@@ -42,8 +43,10 @@ class SupportAgent implements Agent, Conversational, HasTools
             - When a customer provides their email, use the CustomerHistory tool for context
             - For quick FAQ-style questions, use the knowledge base search tool
             - For detailed policy questions, use the FileSearch tool to find specific documentation
+            - For real-time information like shipping carrier delays, tracking updates, or current service status, use WebSearch
             - Always base policy answers on the knowledge base - never make up policies
             - When citing policies, be specific about timelines and conditions
+            - Clearly distinguish between our policies (from the knowledge base) and external information (from web search)
         PROMPT;
     }
 
@@ -59,6 +62,14 @@ class SupportAgent implements Agent, Conversational, HasTools
                 shipping, billing, account issues, or any company policy.'),
 
             new FileSearch(stores: [config('ai.vector_store_id')]),
+            (new WebSearch)
+                ->max(5)
+                ->allow([
+                    'fedex.com',
+                    'ups.com',
+                    'usps.com',
+                ])
+                ->location(country: 'US'),
         ];
     }
 }

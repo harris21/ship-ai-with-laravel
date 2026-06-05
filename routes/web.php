@@ -127,6 +127,16 @@ Route::get('/chat', function () {
     return view('chat');
 })->middleware('auth')->name('chat');
 
+Route::get('/support/web-test', function () {
+    $agent = new SupportAgent;
+    $user = User::first();
+
+    $response = $agent->forUser($user)
+        ->prompt('How long does USPS Priority Mail usually take to arrive?');
+
+    return $response->text;
+});
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
