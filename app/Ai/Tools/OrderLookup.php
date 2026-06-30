@@ -3,6 +3,7 @@
 namespace App\Ai\Tools;
 
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Ai\Contracts\Tool;
 use Laravel\Ai\Tools\Request;
@@ -12,6 +13,8 @@ use function GuzzleHttp\json_encode;
 
 class OrderLookup implements Tool
 {
+    public function __construct(protected ?User $user = null) {}
+
     /**
      * Get the description of the tool's purpose.
      */
@@ -25,7 +28,14 @@ class OrderLookup implements Tool
      */
     public function handle(Request $request): Stringable|string
     {
-        $order = Order::with('user')->find($request['order_id']);
+        $query = Order::with('user')
+            ->where('id', $request['order_id']);
+
+        if ($this->user) {
+            $query->where('user_id', $this->user->id);
+        }
+
+        $order = $query->first();
 
         if (! $order) {
             return 'Order not found.';
